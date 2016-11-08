@@ -28,8 +28,53 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     }
 
     @Override
-    public PacketInfo getPacketInfo(int index) throws RemoteException {
-        return this.infoPackets.get(index);
+    public ArrayList<PacketInfo> getPacketsFilteringType(String type) throws RemoteException {
+        ArrayList<PacketInfo> filtered = new ArrayList<>();
+
+        for (int i = 0; i < this.infoPackets.size(); i++) {
+            if (this.infoPackets.get(i).getInfractionTypeDescription().toLowerCase().contains(type.toLowerCase())) {
+                filtered.add(this.infoPackets.get(i));
+            }
+        }
+
+        return filtered;
+    }
+
+    @Override
+    public ArrayList<PacketInfo> getPacketsFilteringInfIP(String ip) throws RemoteException {
+        ArrayList<PacketInfo> filtered = new ArrayList<>();
+
+        for (int i = 0; i < this.infoPackets.size(); i++) {
+            if (this.infoPackets.get(i).getInfractor_IP().toLowerCase().contains(ip.toLowerCase())) {
+                filtered.add(this.infoPackets.get(i));
+            }
+        }
+
+        return filtered;
+    }
+
+    @Override
+    public ArrayList<PacketInfo> getPacketsFilteringInfMAC(String mac) throws RemoteException {
+        ArrayList<PacketInfo> filtered = new ArrayList<>();
+
+        for (int i = 0; i < this.infoPackets.size(); i++) {
+            if (this.infoPackets.get(i).getInfractor_MAC().toLowerCase().contains(mac.toLowerCase())) {
+                filtered.add(this.infoPackets.get(i));
+            }
+        }
+
+        return filtered;
+    }
+
+    @Override
+    public PacketInfo getPacketInfo(int hash) throws RemoteException {
+        for (int i = 0; i < this.infoPackets.size(); i++) {
+            if (this.infoPackets.get(i).getHash() == hash) {
+                return this.infoPackets.get(i);
+            }
+        }
+
+        return null;
     }
 
     @Override

@@ -1,26 +1,22 @@
 package com;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
+import ist.csf.snifftorrent.RMIServer.ServerInterface;
+import ist.csf.snifftorrent.classes.PacketInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
-import ist.csf.snifftorrent.RMIServer.ServerInterface;
-import ist.csf.snifftorrent.classes.*;
-
-/**
- * Servlet implementation class FirstServlet
- */
-@WebServlet(description = "ShowPackets", urlPatterns = { "/ShowPackets" })
-public class FirstServlet extends HttpServlet {
+@WebServlet(description = "FilterPackets", urlPatterns = { "/FilterPackets" })
+public class FilterPackets extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public FirstServlet() {
+    public FilterPackets() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -42,11 +38,25 @@ public class FirstServlet extends HttpServlet {
         ArrayList<PacketInfo> packetsInfoList;
 
         try {
-            packetsInfoList = server.getPacketInfoList();
+            switch (request.getParameter("filter")) {
+                case "type":
+                    packetsInfoList = server.getPacketsFilteringType(request.getParameter("search"));
+                    break;
+                case "ip":
+                    packetsInfoList = server.getPacketsFilteringInfIP(request.getParameter("search"));
+                    break;
+                case "mac":
+                    packetsInfoList = server.getPacketsFilteringInfMAC(request.getParameter("search"));
+                    break;
+                default:
+                    packetsInfoList = new ArrayList<>();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             packetsInfoList = new ArrayList<>();
         }
+
+        content += "<div class=\"alert alert-danger\" role=\"alert\"><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
 
         content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, packetsInfoList);
 

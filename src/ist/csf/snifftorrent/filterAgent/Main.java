@@ -73,6 +73,8 @@ public class Main {
 
                 if (BitTorrentFilter.filterHandshake(packet)) { // DETECT A TORRENT HANDSHAKE
                     pInfo = new PacketInfo(PacketInfo.BITTORRENT_HANDSHAKE, packet);
+                } else if (BitTorrentFilter.filterUTorrentPackage(packet)) { // DETECT UTORRENT PACKAGES
+                    pInfo = new PacketInfo(PacketInfo.UTORRENT_PACKAGE, packet);
                 } else if (BitTorrentFilter.filterBittorentProtocol(packet)) { // DETECT BITTORRENT PROTOCOL
                     pInfo = new PacketInfo(PacketInfo.BITTORRENT_PROTOCOL, packet);
                 }

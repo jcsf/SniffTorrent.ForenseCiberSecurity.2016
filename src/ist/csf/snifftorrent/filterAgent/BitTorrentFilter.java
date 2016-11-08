@@ -11,6 +11,9 @@ public class BitTorrentFilter {
     /* BITTORRENT PROTOCOL VARIABLES */
     private static final String bittorrentProtocolSignature = "546f7272656e74";
 
+    /* UTORRENT PACKETS VARIABLES */
+    private static final String utorrentPacketsSignature = "75546f7272656e74";
+
     public static boolean filterHandshake (PcapPacket packet) {
         String rawHexData = getHexRawFromPackage(packet);
         if (packet.getCaptureHeader().caplen() == bittorrentHandshakeLength && rawHexData.contains(bittorrentHandshakeSignature)) {
@@ -23,6 +26,15 @@ public class BitTorrentFilter {
     public static boolean filterBittorentProtocol (PcapPacket packet) {
         String rawHexData = getHexRawFromPackage(packet);
         if (rawHexData.contains(bittorrentProtocolSignature)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean filterUTorrentPackage (PcapPacket packet) {
+        String rawHexData = getHexRawFromPackage(packet);
+        if (rawHexData.contains(utorrentPacketsSignature)) {
             return true;
         }
 

@@ -2,6 +2,7 @@
 
 body {
     padding-top: 50px;
+    padding-bottom: 30px;
 }
 
 .centered {
@@ -101,4 +102,28 @@ body {
         color: #ecdbff;
         background-color: #ad415b;
     }
+}
+
+
+.btn-primary {
+    background: #853246;
+    background-color: #ad415b;
+    border-color: #853246;
+    background-image: none;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+    background: #c36077;
+    background-color: #c36077;
+    border-color: #853246;
+    background-image: none;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background: #853246;
+    background-color: #853246;
+    border-color: #853246;
+    background-image: none;
 }

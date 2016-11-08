@@ -12,12 +12,14 @@ public class PacketInfo implements Serializable {
     /* ---| INFRACTIONS TYPE |--- */
     public static final int BITTORRENT_HANDSHAKE = 0;
     public static final int BITTORRENT_PROTOCOL = 1;
+    public static final int UTORRENT_PACKAGE = 2;
 
     /* ---| CLASS VARIABLES |--- */
     private int infraction_type;
     private String infractor_IP, infractor_MAC;
     private Date timeStamp;
     private byte [] packet;
+    private int packetHash;
 
     public PacketInfo (int type, PcapPacket packet) {
         byte [] packetBytes = new byte [packet.getTotalSize()];
@@ -32,17 +34,23 @@ public class PacketInfo implements Serializable {
         packet.getHeader(ipInfo);
         packet.getHeader(ethernetInfo);
 
-        infractor_IP = FormatUtils.ip(ipInfo.source());
-        infractor_MAC = FormatUtils.mac(ethernetInfo.source());
+        this.infractor_IP = FormatUtils.ip(ipInfo.source());
+        this.infractor_MAC = FormatUtils.mac(ethernetInfo.source());
 
-        timeStamp = new Date(packet.getCaptureHeader().timestampInMillis());
+        this.timeStamp = new Date(packet.getCaptureHeader().timestampInMillis());
+
+        this.packetHash = java.util.Arrays.hashCode(packetBytes);
     }
+
+    public int getInfractionType() { return this.infraction_type; };
 
     public String getInfractor_IP() { return this.infractor_IP; }
 
     public String getInfractor_MAC() { return this.infractor_MAC; }
 
     public Date getTimeStamp() { return this.timeStamp; }
+
+    public int getHash() {return this.packetHash; }
 
     public PcapPacket getPacket() {
         return new PcapPacket (this.packet);
@@ -63,10 +71,12 @@ public class PacketInfo implements Serializable {
 
     public String getInfractionTypeDescription() {
         switch (this.infraction_type) {
-            case 0:
+            case BITTORRENT_HANDSHAKE:
                 return "BITTORRENT HANDSHAKE";
-            case 1:
+            case BITTORRENT_PROTOCOL:
                 return "BITTORRENT PROTOCOL";
+            case UTORRENT_PACKAGE:
+                return "UTORRENT PACKAGE";
         }
 
         return "UNKNOW";

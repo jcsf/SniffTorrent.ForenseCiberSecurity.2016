@@ -4,22 +4,16 @@ import ist.csf.snifftorrent.RMIServer.ServerInterface;
 import ist.csf.snifftorrent.classes.PacketInfo;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.rmi.Naming;
 
-/**
- * Servlet implementation class ShowPackets
- */
-@WebServlet(description = "PacketInfoDetail", urlPatterns = { "/PacketInfoDetail" }, initParams = {@WebInitParam(name="id",value="1"),@WebInitParam(name="name",value="pankaj")})
+@WebServlet(description = "PacketInfoDetail", urlPatterns = { "/PacketInfoDetail" })
 public class PacketInfoDetail extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static ServerInterface server;
 
     public PacketInfoDetail() {
         super();
@@ -27,36 +21,30 @@ public class PacketInfoDetail extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String HTML_START = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
-                "<html>\n" +
-                "  <head>\n" +
-                "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" +
-                "    <link href=\"" + request.getContextPath() + "/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n" +
-                "    <link href=\"" + request.getContextPath() + "/css/bootstrap.min.css\" rel=\"stylesheet\" type=\"text/css\"/>\n" +
-                "    <link href=\"" + request.getContextPath() + "/css/bootstrap-theme.min.css\" rel=\"stylesheet\" type=\"text/css\"/>\n" +
-                "    <title>Sniff Torrent</title>\n" +
-                "  </head>";
-        String HTML_END="</body>\n</html>";
+        ServerInterface server = HTML_Templates.server;
+
+        String contextPath = request.getContextPath();
+        String content = HTML_Templates.htmlNavBar(contextPath);
 
         PrintWriter out = response.getWriter();
-        PacketInfo packet = null;
 
         if (server == null) {
-            try {
-                server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
-            } catch (Exception e) {
-                System.out.println("ERRO [Server]: " + e);
-                e.printStackTrace();
-            }
+            server = HTML_Templates.connectToServer();
         }
 
+        // MAKE CONTENT
+
+        PacketInfo packet = null;
+
         try {
-            packet = server.getPacketInfo(Integer.parseInt((String)request.getParameter("index")));
+            packet = server.getPacketInfo(Integer.parseInt(request.getParameter("hash")));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        out.println(HTML_START + packet.toStringWithPacketDetails().replace("\n", "<br>") + HTML_END);
+        content += HTML_Templates.htmlPacket(contextPath, packet);
+
+        out.println(HTML_Templates.htmlFile(HTML_Templates.htmlHeader(contextPath, "Sniff Torrent"), content));
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
