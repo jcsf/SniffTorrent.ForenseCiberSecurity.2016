@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="refresh" content="3; url=/SniffTorrent/ShowPackets" />
+    <meta http-equiv="refresh" content="2; url=/SniffTorrent/ShowPackets?list=0" />
     <link href="<%=request.getContextPath()%>/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="<%=request.getContextPath()%>/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css"/>
     <link href="<%=request.getContextPath()%>/css/style.css" rel="stylesheet" type="text/css">

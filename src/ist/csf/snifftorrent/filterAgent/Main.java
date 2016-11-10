@@ -6,10 +6,14 @@ import java.util.List;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import ist.csf.snifftorrent.RMIServer.ServerInterface;
 import ist.csf.snifftorrent.classes.*;
@@ -20,13 +24,13 @@ public class Main {
     public static void main(String[] args) {
         List<PcapIf> alldevs = new ArrayList<PcapIf>(); // Will be filled with NICs
         StringBuilder errbuf = new StringBuilder(); // For any error msg
-        Information user = new Information();
 
         try {
             server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
         } catch (Exception e) {
             System.out.println("ERRO [Server]: " + e);
             e.printStackTrace();
+            return;
         }
 
         /***************************************************************************
@@ -65,11 +69,10 @@ public class Main {
         /***************************************************************************
          * LISTEN PACKAGES
          **************************************************************************/
-        PcapPacketHandler<Information> jpacketHandler = new PcapPacketHandler<Information>() {
+        PcapPacketHandler<String> jpacketHandler = new PcapPacketHandler<String>() {
 
-            public void nextPacket(PcapPacket packet, Information user) {
+            public void nextPacket(PcapPacket packet, String user) {
                 PacketInfo pInfo = null;
-                //System.out.println(packet.toString());
 
                 if (BitTorrentFilter.filterHandshake(packet)) { // DETECT A TORRENT HANDSHAKE
                     pInfo = new PacketInfo(PacketInfo.BITTORRENT_HANDSHAKE, packet);
@@ -91,25 +94,9 @@ public class Main {
             }
         };
 
-        pcap.loop(Pcap.LOOP_INFINITE, jpacketHandler, user);
+        pcap.loop(Pcap.LOOP_INFINITE, jpacketHandler, "Listen");
 
         pcap.close();
 
-    }
-}
-
-class Information {
-    private int counter;
-
-    public Information () {
-        this.counter = 0;
-    }
-
-    public void setCounter(int counter) {
-        this.counter = counter;
-    }
-
-    public int getCounter() {
-        return this.counter;
     }
 }

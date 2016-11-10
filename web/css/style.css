@@ -17,6 +17,7 @@ body {
     background-color: #ad415b;
     border-color: #ad415b;
     background-image: none;
+    border-bottom: none;
 }
 .navbar-default .navbar-brand {
     color: #ffffff;
@@ -126,4 +127,11 @@ body {
     background-color: #853246;
     border-color: #853246;
     background-image: none;
+}
+
+.nav-tabs > li > a:hover {
+    background: #c36077;
+    background-color: #c36077;
+    background-image: none;
+    border: none;
 }

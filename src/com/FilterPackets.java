@@ -1,6 +1,6 @@
 package com;
 
-import ist.csf.snifftorrent.RMIServer.ServerInterface;
+import ist.csf.snifftorrent.RMIServer.*;
 import ist.csf.snifftorrent.classes.PacketInfo;
 
 import javax.servlet.ServletException;
@@ -22,10 +22,17 @@ public class FilterPackets extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int onList;
         ServerInterface server = HTML_Templates.server;
 
+        if(Integer.parseInt(request.getParameter("list")) == Server.LIVE_PACKETS) {
+            onList = Server.LIVE_PACKETS;
+        } else {
+            onList = Server.SAVED_PACKETS;
+        }
+
         String contextPath = request.getContextPath();
-        String content = HTML_Templates.htmlNavBar(contextPath);
+        String content = HTML_Templates.htmlNavBar(contextPath, onList);
 
         PrintWriter out = response.getWriter();
 
@@ -40,13 +47,16 @@ public class FilterPackets extends HttpServlet {
         try {
             switch (request.getParameter("filter")) {
                 case "type":
-                    packetsInfoList = server.getPacketsFilteringType(request.getParameter("search"));
+                    packetsInfoList = server.getPacketsFilteringType(onList, request.getParameter("search"));
                     break;
                 case "ip":
-                    packetsInfoList = server.getPacketsFilteringInfIP(request.getParameter("search"));
+                    packetsInfoList = server.getPacketsFilteringInfIP(onList, request.getParameter("search"));
                     break;
                 case "mac":
-                    packetsInfoList = server.getPacketsFilteringInfMAC(request.getParameter("search"));
+                    packetsInfoList = server.getPacketsFilteringInfMAC(onList, request.getParameter("search"));
+                    break;
+                case "packetType":
+                    packetsInfoList = server.getPacketsFilteringTCPUDP(onList, request.getParameter("search"));
                     break;
                 default:
                     packetsInfoList = new ArrayList<>();
@@ -58,7 +68,7 @@ public class FilterPackets extends HttpServlet {
 
         content += "<div class=\"alert alert-danger\" role=\"alert\"><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
 
-        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, packetsInfoList);
+        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, request.getRequestURI() + "?" + request.getQueryString(), packetsInfoList);
 
         content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
 

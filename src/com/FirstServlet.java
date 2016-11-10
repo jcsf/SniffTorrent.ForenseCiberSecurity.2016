@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ist.csf.snifftorrent.RMIServer.Server;
 import ist.csf.snifftorrent.RMIServer.ServerInterface;
 import ist.csf.snifftorrent.classes.*;
 
@@ -26,10 +27,17 @@ public class FirstServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int onList;
         ServerInterface server = HTML_Templates.server;
 
+        if(Integer.parseInt(request.getParameter("list")) == Server.LIVE_PACKETS) {
+            onList = Server.LIVE_PACKETS;
+        } else {
+            onList = Server.SAVED_PACKETS;
+        }
+
         String contextPath = request.getContextPath();
-        String content = HTML_Templates.htmlNavBar(contextPath);
+        String content = HTML_Templates.htmlNavBar(contextPath, onList);
 
         PrintWriter out = response.getWriter();
 
@@ -42,13 +50,13 @@ public class FirstServlet extends HttpServlet {
         ArrayList<PacketInfo> packetsInfoList;
 
         try {
-            packetsInfoList = server.getPacketInfoList();
+            packetsInfoList = server.getPacketInfoList(onList);
         } catch (Exception e) {
             e.printStackTrace();
             packetsInfoList = new ArrayList<>();
         }
 
-        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, packetsInfoList);
+        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, request.getRequestURI()+ "?" + request.getQueryString(), packetsInfoList);
 
         content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
 
