@@ -17,7 +17,7 @@ import ist.csf.snifftorrent.classes.*;
 /**
  * Servlet implementation class FirstServlet
  */
-@WebServlet(description = "ShowPackets", urlPatterns = { "/ShowPackets" })
+@WebServlet(description = "ListConnections", urlPatterns = { "/ListConnections" })
 public class FirstServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -30,10 +30,10 @@ public class FirstServlet extends HttpServlet {
         int onList;
         ServerInterface server = HTML_Templates.server;
 
-        if(Integer.parseInt(request.getParameter("list")) == Server.LIVE_PACKETS) {
-            onList = Server.LIVE_PACKETS;
+        if(Integer.parseInt(request.getParameter("list")) == Server.LIVE) {
+            onList = Server.LIVE;
         } else {
-            onList = Server.SAVED_PACKETS;
+            onList = Server.SAVED;
         }
 
         String contextPath = request.getContextPath();
@@ -47,18 +47,18 @@ public class FirstServlet extends HttpServlet {
 
         // MAKE CONTENT
 
-        ArrayList<PacketInfo> packetsInfoList;
+        ArrayList<Connection> connectionList;
 
         try {
-            packetsInfoList = server.getPacketInfoList(onList);
+            connectionList = server.getConnectionList(onList);
         } catch (Exception e) {
             e.printStackTrace();
-            packetsInfoList = new ArrayList<>();
+            connectionList = new ArrayList<>();
         }
 
-        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, request.getRequestURI()+ "?" + request.getQueryString(), packetsInfoList);
+        content += HTML_Templates.htmlConnectionstoHtmlList(contextPath, onList, request.getRequestURI()+ "?" + request.getQueryString(), connectionList);
 
-        content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
+        content += HTML_Templates.htmlFooter("<b>Total of Connections Found: </b>" + connectionList.size());
 
         out.println(HTML_Templates.htmlFile(HTML_Templates.htmlHeader(contextPath, "Sniff Torrent"), content));
     }

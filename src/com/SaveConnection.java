@@ -1,20 +1,21 @@
 package com;
 
-import ist.csf.snifftorrent.RMIServer.*;
+import ist.csf.snifftorrent.RMIServer.Server;
+import ist.csf.snifftorrent.RMIServer.ServerInterface;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-import java.io.*;
-
-@WebServlet(description = "StorePacketInfo", urlPatterns = { "/StorePacketInfo" })
-public class StorePacketInfo extends HttpServlet {
+@WebServlet(description = "SaveConnection", urlPatterns = { "/TrackConnection" })
+public class SaveConnection extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public StorePacketInfo() {
+    public SaveConnection() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -28,10 +29,10 @@ public class StorePacketInfo extends HttpServlet {
             server = HTML_Templates.connectToServer();
         }
 
-        server.savePacketInfo(Integer.parseInt(request.getParameter("hash")));
+        server.saveConnection(Integer.parseInt(request.getParameter("connection")));
 
         // MAKE CONTENT
-        out.println(HTML_Templates.htmlFile(HTML_Templates.htmlRedirectHeader("/SniffTorrent/ShowPackets?list=" + Server.SAVED_PACKETS, "Sniff Torrent"), ""));
+        out.println(HTML_Templates.htmlFile(HTML_Templates.htmlRedirectHeader("/SniffTorrent/ShowConnections?list=" + Server.SAVED, "Sniff Torrent"), ""));
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

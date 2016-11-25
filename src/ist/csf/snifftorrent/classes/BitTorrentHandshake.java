@@ -1,6 +1,8 @@
 package ist.csf.snifftorrent.classes;
 
-public class BitTorrentHandshake {
+import org.jnetpcap.packet.PcapPacket;
+
+public class BitTorrentHandshake extends PacketInfo {
 
     private int pstrLen;
     private String pstr;
@@ -8,8 +10,10 @@ public class BitTorrentHandshake {
     private String infoHash;
     private String peerId;
 
-    public BitTorrentHandshake (String hexData) {
-        String content = hexData.substring(108);
+    public BitTorrentHandshake (PcapPacket packet) {
+        super(PacketInfo.BITTORRENT_HANDSHAKE, packet);
+
+        String content = getHexRawFromPackage(getPacket()).substring(108);
         String pstrHexLen = content.substring(0, 2);
         this.pstrLen = Integer.parseInt(pstrHexLen, 16);
         int endPstr = (this.pstrLen + 1) * 2;
@@ -40,16 +44,8 @@ public class BitTorrentHandshake {
         return clientID.substring(0, 8);
     }
 
-    public static String convertStringHEXToASCII(String hex) {
-        StringBuilder output = new StringBuilder();
-        for (int i = 0; i < hex.length(); i+=2) {
-            String str = hex.substring(i, i+2);
-            output.append((char)Integer.parseInt(str, 16));
-        }
-        return output.toString();
-    }
-
-    public String getHTMLLayout() {
+    @Override
+    public String getHTMLTypeLayout() {
         return "<p class=\"lead\"><b>PACKET CONTENT</b></p>\n" +
                 "<p class=\"lead\"><b>Protocol Name Length: </b>" + getPstrLen() + "</p>\n" +
                 "<p class=\"lead\"><b>Protocol Name: </b>" + getPstr()  + "</p>\n" +
@@ -58,5 +54,14 @@ public class BitTorrentHandshake {
                 "<p class=\"lead\"><b>Peer ID: </b>" + getPeerId() + "</p>\n" +
                 "<p class=\"lead\"><b>Client Software ID: </b>" + getClientSoftwareID() + "</p>\n" +
                 "<hr class=\"my-2\">\n";
+    }
+
+    public static String convertStringHEXToASCII(String hex) {
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < hex.length(); i+=2) {
+            String str = hex.substring(i, i+2);
+            output.append((char)Integer.parseInt(str, 16));
+        }
+        return output.toString();
     }
 }

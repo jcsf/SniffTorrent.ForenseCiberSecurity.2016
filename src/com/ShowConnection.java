@@ -1,6 +1,8 @@
 package com;
 
-import ist.csf.snifftorrent.RMIServer.*;
+import ist.csf.snifftorrent.RMIServer.Server;
+import ist.csf.snifftorrent.RMIServer.ServerInterface;
+import ist.csf.snifftorrent.classes.Connection;
 import ist.csf.snifftorrent.classes.PacketInfo;
 
 import javax.servlet.ServletException;
@@ -12,16 +14,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-@WebServlet(description = "FilterPackets", urlPatterns = { "/ShowConnection/FilterPackets" })
-public class FilterPackets extends HttpServlet {
+/**
+ * Servlet implementation class FirstServlet
+ */
+@WebServlet(description = "ShowConnection", urlPatterns = { "/ShowConnection" })
+public class ShowConnection extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public FilterPackets() {
+    public ShowConnection() {
         super();
         // TODO Auto-generated constructor stub
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException { // TODO: ALL SHOW CONNECTION PAGE
         int onList;
         ServerInterface server = HTML_Templates.server;
 
@@ -41,32 +46,23 @@ public class FilterPackets extends HttpServlet {
         }
 
         // MAKE CONTENT
-
+        int con = Integer.parseInt(request.getParameter("connection"));
+        Connection conInfo;
         ArrayList<PacketInfo> packetsInfoList;
 
         try {
-            switch (request.getParameter("filter")) {
-                case "type":
-                    packetsInfoList = server.getPacketsFilteringType(onList, Integer.parseInt(request.getParameter("connection")), request.getParameter("search"));
-                    break;
-                case "packetType":
-                    packetsInfoList = server.getPacketsFilteringTCPUDP(onList, Integer.parseInt(request.getParameter("connection")), request.getParameter("search"));
-                    break;
-                default:
-                    packetsInfoList = new ArrayList<>();
-            }
+            conInfo = server.getConnection(onList, con);
+            packetsInfoList = conInfo.getTimeline();
         } catch (Exception e) {
             e.printStackTrace();
+            conInfo = null;
             packetsInfoList = new ArrayList<>();
         }
 
         //TODO: CONNECTION INFO
         //content +=
 
-        content += "<div class=\"alert alert-danger\" role=\"alert\"><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
-
-        //TODO: TIMELINE
-        //content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, request.getRequestURI() + "?" + request.getQueryString(), packetsInfoList);
+        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), packetsInfoList);
 
         content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
 

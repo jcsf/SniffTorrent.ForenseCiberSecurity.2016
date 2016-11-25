@@ -1,6 +1,8 @@
 package com;
 
-import ist.csf.snifftorrent.RMIServer.*;
+import ist.csf.snifftorrent.RMIServer.Server;
+import ist.csf.snifftorrent.RMIServer.ServerInterface;
+import ist.csf.snifftorrent.classes.Connection;
 import ist.csf.snifftorrent.classes.PacketInfo;
 
 import javax.servlet.ServletException;
@@ -12,11 +14,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-@WebServlet(description = "FilterPackets", urlPatterns = { "/ShowConnection/FilterPackets" })
-public class FilterPackets extends HttpServlet {
+@WebServlet(description = "FilterConnections", urlPatterns = { "/FilterConnections" })
+public class FilterConnections extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public FilterPackets() {
+    public FilterConnections() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -42,33 +44,29 @@ public class FilterPackets extends HttpServlet {
 
         // MAKE CONTENT
 
-        ArrayList<PacketInfo> packetsInfoList;
+        ArrayList<Connection> connectionsList;
 
         try {
             switch (request.getParameter("filter")) {
-                case "type":
-                    packetsInfoList = server.getPacketsFilteringType(onList, Integer.parseInt(request.getParameter("connection")), request.getParameter("search"));
+                case "ip":
+                    connectionsList = server.getPacketsFilteringInfIP(onList, request.getParameter("search"));
                     break;
-                case "packetType":
-                    packetsInfoList = server.getPacketsFilteringTCPUDP(onList, Integer.parseInt(request.getParameter("connection")), request.getParameter("search"));
+                case "mac":
+                    connectionsList = server.getPacketsFilteringInfMAC(onList, request.getParameter("search"));
                     break;
                 default:
-                    packetsInfoList = new ArrayList<>();
+                    connectionsList = new ArrayList<>();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            packetsInfoList = new ArrayList<>();
+            connectionsList = new ArrayList<>();
         }
 
-        //TODO: CONNECTION INFO
-        //content +=
+        content += "<div class=\"alert alert-danger\" role=\"alert\"><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Connections by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
 
-        content += "<div class=\"alert alert-danger\" role=\"alert\"><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
+        content += HTML_Templates.htmlConnectionstoHtmlList(contextPath, onList, request.getRequestURI() + "?" + request.getQueryString(), connectionsList);
 
-        //TODO: TIMELINE
-        //content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, request.getRequestURI() + "?" + request.getQueryString(), packetsInfoList);
-
-        content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
+        content += HTML_Templates.htmlFooter("<b>Total of Connections Found: </b>" + connectionsList.size());
 
         out.println(HTML_Templates.htmlFile(HTML_Templates.htmlHeader(contextPath, "Sniff Torrent"), content));
     }

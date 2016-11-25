@@ -22,7 +22,7 @@ public class Main {
     public static ServerInterface server = null;
 
     public static void main(String[] args) {
-        List<PcapIf> alldevs = new ArrayList<PcapIf>(); // Will be filled with NICs
+        List<PcapIf> alldevs = new ArrayList<>(); // Will be filled with NICs
         StringBuilder errbuf = new StringBuilder(); // For any error msg
 
         try {
@@ -75,7 +75,7 @@ public class Main {
                 PacketInfo pInfo = null;
 
                 if (BitTorrentFilter.filterHandshake(packet)) { // DETECT A TORRENT HANDSHAKE
-                    pInfo = new PacketInfo(PacketInfo.BITTORRENT_HANDSHAKE, packet);
+                    pInfo = new BitTorrentHandshake(packet);
                 } else if (BitTorrentFilter.filterUTorrentPackage(packet)) { // DETECT UTORRENT PACKAGES
                     pInfo = new PacketInfo(PacketInfo.UTORRENT_PACKAGE, packet);
                 } else if (BitTorrentFilter.filterBittorentProtocol(packet)) { // DETECT BITTORRENT PROTOCOL
@@ -84,10 +84,9 @@ public class Main {
 
                 if (pInfo != null) {
                     System.out.println(pInfo.toString());
-                    // TODO: SEND PACKET INFO TO SERVER
                     try {
                         Main.server.insertPacketInfo(pInfo);
-                    } catch (RemoteException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

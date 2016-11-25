@@ -10,11 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet(description = "DeletePacketInfo", urlPatterns = { "/DeletePacketInfo" })
-public class DeletePacketInfo extends HttpServlet {
+@WebServlet(description = "DeleteConnection", urlPatterns = { "/DeleteConnection" })
+public class DeleteConnection extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    public DeletePacketInfo() {
+    public DeleteConnection() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -28,8 +28,14 @@ public class DeletePacketInfo extends HttpServlet {
             server = HTML_Templates.connectToServer();
         }
 
+        int onList = Integer.parseInt(request.getParameter("list"));
+
         // DO ACTION
-        server.deletePacketInfo(Integer.parseInt(request.getParameter("list")), Integer.parseInt(request.getParameter("connection")), Integer.parseInt(request.getParameter("hash")));
+        if (onList == Server.LIVE) {
+            server.deleteConnection(Integer.parseInt(request.getParameter("connection")));
+        } else if (onList == Server.SAVED) {
+            server.unSaveConnection(Integer.parseInt(request.getParameter("connection")));
+        }
 
         System.out.println(request.getParameter("currentURL"));
 

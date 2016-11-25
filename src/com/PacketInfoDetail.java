@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet(description = "PacketInfoDetail", urlPatterns = { "/PacketInfoDetail" })
+@WebServlet(description = "PacketInfoDetail", urlPatterns = { "/ShowConnection/PacketInfoDetail" })
 public class PacketInfoDetail extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -24,10 +24,10 @@ public class PacketInfoDetail extends HttpServlet {
         int onList;
         ServerInterface server = HTML_Templates.server;
 
-        if(Integer.parseInt(request.getParameter("list")) == Server.LIVE_PACKETS) {
-            onList = Server.LIVE_PACKETS;
+        if(Integer.parseInt(request.getParameter("list")) == Server.LIVE) {
+            onList = Server.LIVE;
         } else {
-            onList = Server.SAVED_PACKETS;
+            onList = Server.SAVED;
         }
 
         String contextPath = request.getContextPath();
@@ -44,7 +44,7 @@ public class PacketInfoDetail extends HttpServlet {
         PacketInfo packet = null;
 
         try {
-            packet = server.getPacketInfo(onList, Integer.parseInt(request.getParameter("hash")));
+            packet = server.getPacketInfo(onList,  Integer.parseInt(request.getParameter("connection")), Integer.parseInt(request.getParameter("hash")));
         } catch (Exception e) {
             e.printStackTrace();
         }
