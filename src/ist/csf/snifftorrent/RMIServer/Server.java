@@ -137,7 +137,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
 
     @Override
     public void unSaveConnection(int hash) throws RemoteException, FileNotFoundException, IOException {
-        Connection con = this.getConnection(LIVE, hash);
+        Connection con = this.getConnection(SAVED, hash);
 
         this.savedConnections.remove(con);
         this.writeListToFile("savedConnections");

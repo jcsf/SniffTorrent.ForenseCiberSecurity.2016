@@ -59,7 +59,7 @@ public class ShowConnection extends HttpServlet {
 
         String timeline = HTML_Templates.htmlConnectionTimeLineToHtmlTimeLine(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), conInfo, conInfo.getTimeline());
 
-        content += HTML_Templates.htmlConnection(contextPath, conInfo, timeline, "");
+        content += HTML_Templates.htmlConnection(contextPath, onList, conInfo, timeline, "");
 
         content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + conInfo.getTimeline().size());
 

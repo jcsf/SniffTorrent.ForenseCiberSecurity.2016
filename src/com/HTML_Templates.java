@@ -122,7 +122,23 @@ public class HTML_Templates {
         return listHTML + "</div>";
     }
 
-    public static String htmlConnection(String requestPath, Connection connection, String timeline, String filter) {
+    public static String htmlConnection(String requestPath, int list, Connection connection, String timeline, String filter) {
+        String saveButton = "";
+
+        if(list == Server.LIVE) {
+            saveButton = "<form action=\"/SniffTorrent/TrackConnection\" method=\"get\" style=\"display: inline-block; margin-right: 8px;\">\n" +
+                            "<input type=\"hidden\" name=\"connection\" value=\""+ connection.getHash() +"\">\n" +
+                            "<button type=\"submit\" class=\"btn btn-default\"><span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save Connection</button>\n"  +
+                        "</form>";
+        }
+
+        String deleteButton = "<form action=\"/SniffTorrent/DeleteConnection\" method=\"get\" style=\"display: inline-block; margin-right: 8px;\">\n" +
+                                    "<input type=\"hidden\" name=\"list\" value=\""+ list +"\">\n" +
+                                    "<input type=\"hidden\" name=\"connection\" value=\""+ connection.getHash() +"\">\n" +
+                                    "<input type=\"hidden\" name=\"currentURL\" value=\"/SniffTorrent/ListConnections?list=" + list + "\">\n" +
+                                    "<button type=\"submit\" class=\"btn btn-danger\"><span class=\"glyphicon glyphicon-trash\" aria-hidden=\"true\"></span> Delete Connection</button>\n"  +
+                                "</form>";
+
         return "<div class=\"container\">\n" +
                     "<div class=\"jumbotron\">\n" +
                         "<div class=\"row\">\n" +
@@ -138,6 +154,10 @@ public class HTML_Templates {
                         "<p class=\"lead\"><b>Infractor MAC: </b>" + connection.getInfractorMAC() + "</p>\n" +
                         "<p class=\"lead\"><b>Outside IP: </b>" + connection.getOutsideIP() + "</p>\n" +
                         "<p class=\"lead\"><b>Outside MAC: </b>" + connection.getOutsideMAC() + "</p>\n" +
+                        "<div class=\"row\"><div class=\"pull-right\">" +
+                        saveButton +
+                        deleteButton +
+                        "</div></div>" +
                         "<hr class=\"my-2\">\n" +
                         filter +
                         timeline +
@@ -172,6 +192,7 @@ public class HTML_Templates {
                                     info.getHTMLTypeLayout() +
                                     "</div>" +
                                     "<button type=\"button\" onclick=\"showHideButton(this); showHideRawButton('packetButton_" + info.getHash() + "');\" class=\"btn btn-primary btn-sm pull-right\" data-toggle=\"collapse\" data-target=\"#packet_" + info.getHash() + "\"><span class=\"glyphicon glyphicon-chevron-down\" aria-hidden=\"true\"></span> Show More</button>\n" +
+                                    "<div class=\"pull-right\">" + htmlDeleteButton(list, currentURL, "/ShowConnection/DeletePacketInfo", con, info.getHash()) + "</div>" +
                                     "<button type=\"button\" id=\"packetButton_" + info.getHash() + "\" class=\"btn btn-default btn-sm pull-right\" data-toggle=\"modal\" data-target=\"#packetModal_" + info.getHash() + "\" style=\"margin-right: 8px; display: none;\"><span class=\"glyphicon glyphicon-compressed\" aria-hidden=\"true\"></span> Show Packet Raw Info</button>\n" +
                                     "<div class=\"modal fade\" id=\"packetModal_" + info.getHash() + "\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">\n" +
                                         "<div class=\"modal-dialog\" role=\"document\">\n" +

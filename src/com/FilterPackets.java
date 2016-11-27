@@ -69,7 +69,7 @@ public class FilterPackets extends HttpServlet {
 
         String filter = "<div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><a href=\"/SniffTorrent/ShowConnection?list=" + onList + "&connection=" + con + "\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">x</a><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
 
-        content += HTML_Templates.htmlConnection(contextPath, conInfo, timeline, filter);
+        content += HTML_Templates.htmlConnection(contextPath, onList, conInfo, timeline, filter);
 
         content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
 
