@@ -17,7 +17,7 @@ public class BitTorrentFilter {
 
     public static boolean filterHandshake (PcapPacket packet) {
         String rawHexData = PacketInfo.getHexRawFromPackage(packet);
-        if (rawHexData.contains(bittorrentHandshakeSignature) && packet.hasHeader(new Tcp())) {
+        if (rawHexData.contains(bittorrentHandshakeSignature)) {
             return true;
         }
 
@@ -26,7 +26,7 @@ public class BitTorrentFilter {
 
     public static boolean filterBittorentProtocol (PcapPacket packet) {
         String rawHexData = PacketInfo.getHexRawFromPackage(packet);
-        if (rawHexData.contains(bittorrentProtocolSignature) && packet.hasHeader(new Tcp())) {
+        if (rawHexData.contains(bittorrentProtocolSignature)) {
             return true;
         }
 

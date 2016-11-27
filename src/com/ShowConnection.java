@@ -37,7 +37,6 @@ public class ShowConnection extends HttpServlet {
         }
 
         String contextPath = request.getContextPath();
-        String content = HTML_Templates.htmlNavBar(contextPath, onList);
 
         PrintWriter out = response.getWriter();
 
@@ -48,23 +47,21 @@ public class ShowConnection extends HttpServlet {
         // MAKE CONTENT
         int con = Integer.parseInt(request.getParameter("connection"));
         Connection conInfo;
-        ArrayList<PacketInfo> packetsInfoList;
 
         try {
             conInfo = server.getConnection(onList, con);
-            packetsInfoList = conInfo.getTimeline();
         } catch (Exception e) {
             e.printStackTrace();
             conInfo = null;
-            packetsInfoList = new ArrayList<>();
         }
 
-        //TODO: CONNECTION INFO
-        //content +=
+        String content = HTML_Templates.htmlNavBar(contextPath, onList, conInfo);
 
-        content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), packetsInfoList);
+        String timeline = HTML_Templates.htmlConnectionTimeLineToHtmlTimeLine(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), conInfo, conInfo.getTimeline());
 
-        content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
+        content += HTML_Templates.htmlConnection(contextPath, conInfo, timeline, "");
+
+        content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + conInfo.getTimeline().size());
 
         out.println(HTML_Templates.htmlFile(HTML_Templates.htmlHeader(contextPath, "Sniff Torrent"), content));
     }

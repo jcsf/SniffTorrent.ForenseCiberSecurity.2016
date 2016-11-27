@@ -7,10 +7,11 @@ import org.jnetpcap.protocol.network.Ip4;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Connection {
+public class Connection implements Serializable {
     public static int SOURCE = 0, DESTINATION = 1;
 
     private int hash;

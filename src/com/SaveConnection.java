@@ -32,7 +32,7 @@ public class SaveConnection extends HttpServlet {
         server.saveConnection(Integer.parseInt(request.getParameter("connection")));
 
         // MAKE CONTENT
-        out.println(HTML_Templates.htmlFile(HTML_Templates.htmlRedirectHeader("/SniffTorrent/ShowConnections?list=" + Server.SAVED, "Sniff Torrent"), ""));
+        out.println(HTML_Templates.htmlFile(HTML_Templates.htmlRedirectHeader("/SniffTorrent/ListConnections?list=" + Server.SAVED, "Sniff Torrent"), ""));
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

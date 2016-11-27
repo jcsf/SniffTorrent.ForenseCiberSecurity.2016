@@ -34,7 +34,7 @@ public class FilterConnections extends HttpServlet {
         }
 
         String contextPath = request.getContextPath();
-        String content = HTML_Templates.htmlNavBar(contextPath, onList);
+        String content = HTML_Templates.htmlNavBar(contextPath, onList, null);
 
         PrintWriter out = response.getWriter();
 

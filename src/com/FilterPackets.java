@@ -1,6 +1,7 @@
 package com;
 
 import ist.csf.snifftorrent.RMIServer.*;
+import ist.csf.snifftorrent.classes.Connection;
 import ist.csf.snifftorrent.classes.PacketInfo;
 
 import javax.servlet.ServletException;
@@ -32,7 +33,6 @@ public class FilterPackets extends HttpServlet {
         }
 
         String contextPath = request.getContextPath();
-        String content = HTML_Templates.htmlNavBar(contextPath, onList);
 
         PrintWriter out = response.getWriter();
 
@@ -41,10 +41,12 @@ public class FilterPackets extends HttpServlet {
         }
 
         // MAKE CONTENT
-
+        int con = Integer.parseInt(request.getParameter("connection"));
+        Connection conInfo;
         ArrayList<PacketInfo> packetsInfoList;
 
         try {
+            conInfo = server.getConnection(onList, con);
             switch (request.getParameter("filter")) {
                 case "type":
                     packetsInfoList = server.getPacketsFilteringType(onList, Integer.parseInt(request.getParameter("connection")), request.getParameter("search"));
@@ -57,16 +59,17 @@ public class FilterPackets extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            conInfo = null;
             packetsInfoList = new ArrayList<>();
         }
 
-        //TODO: CONNECTION INFO
-        //content +=
+        String content = HTML_Templates.htmlNavBar(contextPath, onList, conInfo);
 
-        content += "<div class=\"alert alert-danger\" role=\"alert\"><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
+        String timeline = HTML_Templates.htmlConnectionTimeLineToHtmlTimeLine(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), conInfo, packetsInfoList);
 
-        //TODO: TIMELINE
-        //content += HTML_Templates.htmlPacketInfoListtoHtmlList(contextPath, onList, request.getRequestURI() + "?" + request.getQueryString(), packetsInfoList);
+        String filter = "<div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><a href=\"/SniffTorrent/ShowConnection?list=" + onList + "&connection=" + con + "\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">x</a><b><span class=\"glyphicon glyphicon-search\" aria-hidden=\"true\"></span> Filtering Packages by:</b> " + request.getParameter("filter").toUpperCase() + " = " + request.getParameter("search").toUpperCase() + "</div>\n";
+
+        content += HTML_Templates.htmlConnection(contextPath, conInfo, timeline, filter);
 
         content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + packetsInfoList.size());
 

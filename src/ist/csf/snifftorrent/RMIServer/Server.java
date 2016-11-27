@@ -15,22 +15,20 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     ArrayList<Connection> liveConnections;
     ArrayList<Connection> savedConnections;
 
-    ArrayList<PacketInfo> livePackets;
-    ArrayList<PacketInfo> savedPackets;
-
-
     protected Server() throws RemoteException {
-        this.livePackets = new ArrayList<>();
         this.liveConnections = new ArrayList<>();
 
         try {
-            this.savedPackets = (ArrayList<PacketInfo>) readFileToList("savedPackets");
             this.savedConnections = (ArrayList<Connection>) readFileToList("savedConnections");
         } catch (Exception e) {
             e.printStackTrace();
-            this.savedPackets = new ArrayList<>();
             this.savedConnections = new ArrayList<>();
             System.out.println("No files to read. Creating New Files...");
+            try {
+                writeListToFile("savedConnections");
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -93,14 +91,13 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
 
     @Override
     public void insertPacketInfo(PacketInfo info) throws RemoteException, IOException {
-        Connection connection = null;
-        int list = searchConnectionWithPacket(info, connection);
+        Connection connection = searchConnectionWithPacket(info);
 
         connection.addPacketToTimeline(info);
 
-        if(list == -1) {
+        if(!this.liveConnections.contains(connection) && !this.savedConnections.contains(connection)) {
             this.liveConnections.add(connection);
-        } else if (list == SAVED) {
+        } else if (this.savedConnections.contains(connection)) {
             this.writeListToFile("savedConnections");
         }
     }
@@ -110,24 +107,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         this.liveConnections.remove(this.getConnection(LIVE, hashConnection));
     }
 
-    private int searchConnectionWithPacket(PacketInfo info, Connection con) {
+    private Connection searchConnectionWithPacket(PacketInfo info) {
 
         for (int k = 0; k < 2; k++) {
             ArrayList<Connection> cons = getList(k);
 
             for (int i = 0; i < cons.size(); i++) {
                 if (info.getSourceIP().equals(cons.get(i).getInfractorIP()) && info.getDestinationIP().equals(cons.get(i).getOutsideIP())) {
-                    con = cons.get(i);
-                    return k;
+                    return cons.get(i);
                 } else if (info.getSourceIP().equals(cons.get(i).getOutsideIP()) && info.getDestinationIP().equals(cons.get(i).getInfractorIP())) {
-                    con = cons.get(i);
-                    return k;
+                    return cons.get(i);
                 }
             }
         }
 
-        con = Connection.createConnection(info);
-        return -1;
+        return Connection.createConnection(info);
     }
 
     // SAVED PACKETS METHODS
@@ -145,7 +139,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     public void unSaveConnection(int hash) throws RemoteException, FileNotFoundException, IOException {
         Connection con = this.getConnection(LIVE, hash);
 
-        this.savedPackets.remove(con);
+        this.savedConnections.remove(con);
         this.writeListToFile("savedConnections");
     }
 
@@ -180,7 +174,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         // DO ACTION
         FileOutputStream fout = new FileOutputStream(folder + "\\" + filename + ".snifftorrent");
         ObjectOutputStream oos = new ObjectOutputStream(fout);
-        oos.writeObject(this.savedPackets);
+        oos.writeObject(this.savedConnections);
         oos.close();
         fout.close();
     }

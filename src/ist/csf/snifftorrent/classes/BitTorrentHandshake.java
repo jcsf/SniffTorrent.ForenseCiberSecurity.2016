@@ -13,7 +13,13 @@ public class BitTorrentHandshake extends PacketInfo {
     public BitTorrentHandshake (PcapPacket packet) {
         super(PacketInfo.BITTORRENT_HANDSHAKE, packet);
 
-        String content = getHexRawFromPackage(getPacket()).substring(108);
+        String content;
+        if (this.getPacketType().equals("TCP")) {
+            content = getHexRawFromPackage(getPacket()).substring(108);
+        } else {
+            content = getHexRawFromPackage(getPacket()).substring(124);
+        }
+
         String pstrHexLen = content.substring(0, 2);
         this.pstrLen = Integer.parseInt(pstrHexLen, 16);
         int endPstr = (this.pstrLen + 1) * 2;
@@ -46,14 +52,13 @@ public class BitTorrentHandshake extends PacketInfo {
 
     @Override
     public String getHTMLTypeLayout() {
-        return "<p class=\"lead\"><b>PACKET CONTENT</b></p>\n" +
-                "<p class=\"lead\"><b>Protocol Name Length: </b>" + getPstrLen() + "</p>\n" +
-                "<p class=\"lead\"><b>Protocol Name: </b>" + getPstr()  + "</p>\n" +
-                "<p class=\"lead\"><b>Reserved Bytes: </b>" + getReservedBytes() + "</p>\n" +
-                "<p class=\"lead\"><b>Info Hash: </b>" + getInfoHash() + "</p>\n" +
-                "<p class=\"lead\"><b>Peer ID: </b>" + getPeerId() + "</p>\n" +
-                "<p class=\"lead\"><b>Client Software ID: </b>" + getClientSoftwareID() + "</p>\n" +
-                "<hr class=\"my-2\">\n";
+        return "<p class=\"timeline-collapse\"><b>PACKET CONTENT</b></p>\n" +
+                "<p class=\"timeline-collapse\"><b>Protocol Name Length: </b>" + getPstrLen() + "</p>\n" +
+                "<p class=\"timeline-collapse\"><b>Protocol Name: </b>" + getPstr()  + "</p>\n" +
+                "<p class=\"timeline-collapse\"><b>Reserved Bytes: </b>" + getReservedBytes() + "</p>\n" +
+                "<p class=\"timeline-collapse\"><b>Info Hash: </b>" + getInfoHash() + "</p>\n" +
+                "<p class=\"timeline-collapse\"><b>Peer ID: </b>" + getPeerId() + "</p>\n" +
+                "<p class=\"timeline-collapse\"><b>Client Software ID: </b>" + getClientSoftwareID() + "</p>\n";
     }
 
     public static String convertStringHEXToASCII(String hex) {
