@@ -105,9 +105,9 @@ public class Connection implements Serializable {
     public String getTypeDescription() {
         switch (this.type) {
             case BITTORRENT_TRAFFIC:
-                return "BITTORRENT TRAFFIC";
+                return "Bittorrent Traffic";
             case UDP_TRAFFIC:
-                return "SUSPICIOUS UDP TRAFFIC";
+                return "Suspicius UDP Traffic";
         }
 
         return "UNKNOW";

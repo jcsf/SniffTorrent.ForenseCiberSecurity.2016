@@ -6,6 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import ist.csf.snifftorrent.classes.*;
 
@@ -13,22 +14,37 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     public static final int LIVE = 0;
     public static final int SAVED = 1;
 
-    ArrayList<Connection> liveConnections;
-    ArrayList<Connection> savedConnections;
-    ArrayList<Connection> udpTraffic;
+    private ArrayList<Connection> liveConnections;
+    private ArrayList<Connection> savedConnections;
+    private ArrayList<Connection> udpTraffic;
+
+    private ServerProperties properties;
 
     protected Server() throws RemoteException {
         this.liveConnections = new ArrayList<>();
         this.udpTraffic = new ArrayList<>();
 
         try {
-            this.savedConnections = (ArrayList<Connection>) readFileToList("savedConnections");
+            this.savedConnections = (ArrayList<Connection>) readObjectFromFile("savedConnections");
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             this.savedConnections = new ArrayList<>();
             System.out.println("No files to read. Creating New Files...");
             try {
-                writeListToFile("savedConnections");
+                writeObjectToFile("savedConnections", this.savedConnections);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+
+        try {
+            this.properties = (ServerProperties) readObjectFromFile("config");
+        } catch (Exception e) {
+            //e.printStackTrace();
+            this.properties = new ServerProperties(5, 1000); //5 Minutes, 1000 Packets
+            System.out.println("No Properties to read. Using Default Properties...");
+            try {
+                writeObjectToFile("config", this.properties);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -40,7 +56,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         System.setProperty("java.rmi.server.hostname","localhost");
         ServerInterface server = new Server();
         LocateRegistry.createRegistry(1099).rebind("server", server);
-        new UDPTrafficCleaner(600000, server);
+        new UDPTrafficCleaner(TimeUnit.MINUTES.toMillis(1), server);
         System.out.println("Server Ready...");
     }
 
@@ -51,7 +67,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     }
 
     @Override
-    public ArrayList<Connection> getPacketsFilteringInfIP(int list, String ip) throws RemoteException {
+    public ArrayList<Connection> getConnectionsFilteringInfIP(int list, String ip) throws RemoteException {
         ArrayList<Connection> conns = getList(list);
         ArrayList<Connection> filtered = new ArrayList<>();
 
@@ -65,12 +81,26 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     }
 
     @Override
-    public ArrayList<Connection> getPacketsFilteringInfMAC(int list, String mac) throws RemoteException {
+    public ArrayList<Connection> getConnectionsFilteringInfMAC(int list, String mac) throws RemoteException {
         ArrayList<Connection> conns = getList(list);
         ArrayList<Connection> filtered = new ArrayList<>();
 
         for (int i = 0; i < conns.size(); i++) {
             if (conns.get(i).getInfractorMAC().toLowerCase().contains(mac.toLowerCase())) {
+                filtered.add(conns.get(i));
+            }
+        }
+
+        return filtered;
+    }
+
+    @Override
+    public ArrayList<Connection> getConnectionsFilteringType(int list, String type) throws RemoteException {
+        ArrayList<Connection> conns = getList(list);
+        ArrayList<Connection> filtered = new ArrayList<>();
+
+        for (int i = 0; i < conns.size(); i++) {
+            if (conns.get(i).getTypeDescription().toLowerCase().contains(type.toLowerCase())) {
                 filtered.add(conns.get(i));
             }
         }
@@ -102,7 +132,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         if(!this.liveConnections.contains(connection) && !this.savedConnections.contains(connection)) {
             this.liveConnections.add(connection);
         } else if (this.savedConnections.contains(connection)) {
-            this.writeListToFile("savedConnections");
+            this.writeObjectToFile("savedConnections", this.savedConnections);
         }
     }
 
@@ -135,7 +165,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         Connection con = this.getConnection(LIVE, hash);
 
         this.savedConnections.add(con);
-        this.writeListToFile("savedConnections");
+        this.writeObjectToFile("savedConnections", this.savedConnections);
         this.liveConnections.remove(con);
     }
 
@@ -144,7 +174,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         Connection con = this.getConnection(SAVED, hash);
 
         this.savedConnections.remove(con);
-        this.writeListToFile("savedConnections");
+        this.writeObjectToFile("savedConnections", this.savedConnections);
     }
 
     private ArrayList <Connection> getList(int list) {
@@ -155,7 +185,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         }
     }
 
-    private Object readFileToList(String filename) throws FileNotFoundException, IOException, ClassNotFoundException {
+    private Object readObjectFromFile(String filename) throws FileNotFoundException, IOException, ClassNotFoundException {
         Object lpi;
 
         // CREATE SAVE FOLDER
@@ -171,14 +201,14 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         return lpi;
     }
 
-    private void writeListToFile(String filename) throws FileNotFoundException, IOException {
+    private void writeObjectToFile(String filename, Object obj) throws FileNotFoundException, IOException {
         // CREATE SAVE FOLDER
         String folder = System.getProperty("user.home") + "\\SniffTorrent";
 
         // DO ACTION
         FileOutputStream fout = new FileOutputStream(folder + "\\" + filename + ".snifftorrent");
         ObjectOutputStream oos = new ObjectOutputStream(fout);
-        oos.writeObject(this.savedConnections);
+        oos.writeObject(obj);
         oos.close();
         fout.close();
     }
@@ -235,7 +265,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         timeline.remove(getPacketInfo(list, hashConnection, hashPacket));
 
         if (list == SAVED) {
-            this.writeListToFile("savedConnections");
+            this.writeObjectToFile("savedConnections", this.savedConnections);
         }
     }
 
@@ -244,7 +274,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     public void insertUDPPacket(PacketInfo info) throws RemoteException, IOException {
         Connection connection = searchConnectionWithUDPPacket(info);
 
-        if (connection.getUDPPacketCounter() <= 1000) {
+        if (connection.getUDPPacketCounter() <= properties.numberOfPackets) {
             connection.addPacketToTimeline(info);
         } else {
             connection.increaseUDPPacketCounter(info);
@@ -254,7 +284,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
             this.udpTraffic.add(connection);
         }
 
-        if(connection.getTimeline().size() > 1000 && !this.liveConnections.contains(connection)) { // MORE THAN 1000 UDP PACKAGES
+        if(connection.getTimeline().size() > properties.numberOfPackets && !this.liveConnections.contains(connection) && !this.savedConnections.contains(connection)) {
             PacketInfo first = connection.getTimeline().get(0);
             PacketInfo last = connection.getTimeline().get(connection.getTimeline().size()-1);
             connection.setUDPPacketCounter();
@@ -283,10 +313,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
     public void checkOldUDPTraffic() throws RemoteException{
         ArrayList <Connection> toRemove = new ArrayList<>();
         Date now = new Date();
-        long tenMinutes = 10 * 60000;
 
         for (int i = 0; i < this.udpTraffic.size(); i++) {
-            Date timestampAfter10Min = new Date (this.udpTraffic.get(i).getTimeline().get(0).getTimeStamp().getTime() + tenMinutes);
+            Date timestampAfter10Min = new Date (this.udpTraffic.get(i).getTimeline().get(0).getTimeStamp().getTime() + this.properties.timeWindow);
             if(now.after(timestampAfter10Min)) {
                 toRemove.add(this.udpTraffic.get(i));
             }
@@ -296,15 +325,31 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
             this.udpTraffic.remove(toRemove.get(i));
         }
     }
+
+    @Override
+    public ServerProperties getServerProperties() throws RemoteException {
+        return this.properties;
+    }
+
+    @Override
+    public void changeServerProperties(long timeWindowInMinutes, int numberOfPackages) throws RemoteException {
+        this.properties.timeWindow =  TimeUnit.MINUTES.toMillis(timeWindowInMinutes);
+        this.properties.numberOfPackets = numberOfPackages;
+        try {
+            writeObjectToFile("config", this.properties);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
 }
 
 //Thread to clean old udp traffic detected
 class UDPTrafficCleaner extends Thread {
 
-    int timeSleepMS;
+    long timeSleepMS;
     ServerInterface db;
 
-    public UDPTrafficCleaner (int timeSleepMS, ServerInterface db) {
+    public UDPTrafficCleaner (long timeSleepMS, ServerInterface db) {
         this.timeSleepMS = timeSleepMS;
         this.db = db;
         this.start();

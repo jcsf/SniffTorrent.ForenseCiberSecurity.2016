@@ -13,8 +13,9 @@ public interface ServerInterface extends Remote {
 
     // GENERIC METHODS
     ArrayList<Connection> getConnectionList(int list) throws RemoteException;
-    ArrayList<Connection> getPacketsFilteringInfIP(int list, String ip) throws RemoteException;
-    ArrayList<Connection> getPacketsFilteringInfMAC(int list, String mac) throws RemoteException;
+    ArrayList<Connection> getConnectionsFilteringInfIP(int list, String ip) throws RemoteException;
+    ArrayList<Connection> getConnectionsFilteringInfMAC(int list, String mac) throws RemoteException;
+    ArrayList<Connection> getConnectionsFilteringType(int list, String type) throws RemoteException;
 
     // GENERIC CONNECTIONS METHODS
     Connection getConnection(int list, int hash) throws RemoteException;
@@ -36,4 +37,9 @@ public interface ServerInterface extends Remote {
     //UDP BEHAVIOUR TRAFFIC
     void insertUDPPacket(PacketInfo info) throws RemoteException, IOException;
     void checkOldUDPTraffic() throws RemoteException;
+
+    //SERVER PROPERTIES
+    ServerProperties getServerProperties() throws RemoteException;
+    void changeServerProperties(long timeWindow, int numberOfPackages) throws RemoteException;
+
 }

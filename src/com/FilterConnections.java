@@ -49,10 +49,13 @@ public class FilterConnections extends HttpServlet {
         try {
             switch (request.getParameter("filter")) {
                 case "ip":
-                    connectionsList = server.getPacketsFilteringInfIP(onList, request.getParameter("search"));
+                    connectionsList = server.getConnectionsFilteringInfIP(onList, request.getParameter("search"));
                     break;
                 case "mac":
-                    connectionsList = server.getPacketsFilteringInfMAC(onList, request.getParameter("search"));
+                    connectionsList = server.getConnectionsFilteringInfMAC(onList, request.getParameter("search"));
+                    break;
+                case "type":
+                    connectionsList = server.getConnectionsFilteringType(onList, request.getParameter("search"));
                     break;
                 default:
                     connectionsList = new ArrayList<>();

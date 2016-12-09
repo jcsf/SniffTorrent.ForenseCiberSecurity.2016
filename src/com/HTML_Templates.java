@@ -5,6 +5,7 @@ import ist.csf.snifftorrent.classes.*;
 
 import java.rmi.Naming;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class HTML_Templates {
 
@@ -56,12 +57,17 @@ public class HTML_Templates {
         String nav_tab;
 
         if (list == Server.LIVE) {
-
             nav_tab = "<li role=\"presentation\" class=\"active\"><a href=\"/SniffTorrent/ListConnections?list=0\" style=\"color:#ad415b\"><span class=\"glyphicon glyphicon-facetime-video\" aria-hidden=\"true\"></span> <b>LIVE</b></a></li>\n" +
-                        "<li role=\"presentation\"><a href=\"/SniffTorrent/ListConnections?list=1\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-inbox\" aria-hidden=\"true\"></span> <b>TRACKING</b></a></li>\n";
+                        "<li role=\"presentation\"><a href=\"/SniffTorrent/ListConnections?list=1\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-inbox\" aria-hidden=\"true\"></span> <b>TRACKING</b></a></li>\n" +
+                        "<li role=\"presentation\"><a href=\"/SniffTorrent/Settings\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-cog\" aria-hidden=\"true\"></span> <b>SETTINGS</b></a></li>\n";
+        } else if (list == Server.SAVED) {
+            nav_tab = "<li role=\"presentation\"><a href=\"/SniffTorrent/ListConnections?list=0\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-facetime-video\" aria-hidden=\"true\"></span> <b>LIVE</b></a></li>\n" +
+                    "<li role=\"presentation\" class=\"active\"><a href=\"/SniffTorrent/ListConnections?list=1\" style=\"color:#ad415b\"><span class=\"glyphicon glyphicon-inbox\" aria-hidden=\"true\"></span> <b>TRACKING</b></a></li>\n" +
+                    "<li role=\"presentation\"><a href=\"/SniffTorrent/Settings\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-cog\" aria-hidden=\"true\"></span> <b>SETTINGS</b></a></li>\n";
         } else {
             nav_tab = "<li role=\"presentation\"><a href=\"/SniffTorrent/ListConnections?list=0\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-facetime-video\" aria-hidden=\"true\"></span> <b>LIVE</b></a></li>\n" +
-                    "<li role=\"presentation\" class=\"active\"><a href=\"/SniffTorrent/ListConnections?list=1\" style=\"color:#ad415b\"><span class=\"glyphicon glyphicon-inbox\" aria-hidden=\"true\"></span> <b>TRACKING</b></a></li>\n";
+                    "<li role=\"presentation\"><a href=\"/SniffTorrent/ListConnections?list=1\" style=\"color:#ffffff\"><span class=\"glyphicon glyphicon-inbox\" aria-hidden=\"true\"></span> <b>TRACKING</b></a></li>\n" +
+                    "<li role=\"presentation\" class=\"active\"><a href=\"/SniffTorrent/Settings\" style=\"color:#ad415b\"><span class=\"glyphicon glyphicon-cog\" aria-hidden=\"true\"></span> <b>SETTINGS</b></a></li>\n";
         }
 
         return "<nav class=\"navbar navbar-default navbar-fixed-top\">\n" +
@@ -244,11 +250,12 @@ public class HTML_Templates {
     }
 
     public static String htmlSearch (int list, Connection con) {
-        if (con == null) {
+        if (con == null && (list == Server.LIVE || list == Server.SAVED)) {
             return "<form class=\"navbar-form navbar-right\" role=\"search\" action=\"FilterConnections\" method=\"get\">\n" +
                         "<div class=\"form-group\">\n" +
                             "<input type=\"hidden\" name=\"list\" value=\""+ list +"\">\n" +
                             "<select class=\"form-control\" name=\"filter\">\n" +
+                                "<option value=\"type\">Infractor Type</option>\n" +
                                 "<option value=\"ip\">Infractor IP</option>\n" +
                                 "<option value=\"mac\">Infractor MAC</option>\n" +
                             "</select>\n" +
@@ -256,7 +263,7 @@ public class HTML_Templates {
                         "</div>\n" +
                         "<button type=\"submit\" class=\"btn btn-default\">Search</button>\n" +
                     "</form>";
-        } else {
+        } else if (con != null && con.getType() == Connection.BITTORRENT_TRAFFIC) {
             return "<form class=\"navbar-form navbar-right\" role=\"search\" action=\"ShowConnection/FilterPackets\" method=\"get\">\n" +
                         "<div class=\"form-group\">\n" +
                             "<input type=\"hidden\" name=\"list\" value=\""+ list +"\">\n" +
@@ -270,6 +277,38 @@ public class HTML_Templates {
                         "<button type=\"submit\" class=\"btn btn-default\">Search</button>\n" +
                     "</form>";
         }
+
+        return "";
+    }
+
+    public static String htmlSettings(String requestPath, ServerProperties prop, boolean saved) {
+        String info = "";
+
+        if (saved) {
+            info = "<div class=\"alert alert-success\" role=\"info\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> New Settings Saved</div>\n";
+        }
+
+        return info +
+                "<div class=\"container\">\n" +
+                    "<div class=\"jumbotron\">\n" +
+                        "<h1 class=\"display-3\"><span class=\"glyphicon glyphicon-cog\" aria-hidden=\"true\"></span> <b>Settings</b></h1>\n" +
+                        "<br>" +
+                        "<h4><b>UDP Behaviour Filtering Settings</b></h4>" +
+                        "<form action=\"/SniffTorrent/Settings\" method=\"post\" style=\"display: inline-block; margin-right: 8px;\">\n" +
+                            "<div class=\"form-group\">" +
+                                "<label for=\"timeInput\"> Time Window: </label>" +
+                                "<input class=\"form-control\" id=\"timeInput\" type=\"text\" name=\"time\" value=\""+ TimeUnit.MILLISECONDS.toMinutes(prop.timeWindow) +"\">\n" +
+                                "<small id=\"timeInputHelper\" class=\"text-muted\">in Minutes</small>" +
+                            "</div>" +
+                            "<div class=\"form-group\">" +
+                                "<label for=\"packetsInput\"> Number of Packets: </label>" +
+                                "<input class=\"form-control\" id=\"packetsInput\" type=\"text\" name=\"nPackets\" value=\""+ prop.numberOfPackets +"\">\n" +
+                                "<small id=\"packetsInputHelper\" class=\"text-muted\">Number minimum of packets that will create a warning</small>" +
+                            "</div>" +
+                            "<button type=\"submit\" class=\"btn btn-default pull-right\"><span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save Settings</button>\n"  +
+                        "</form>" +
+                    "</div>\n" +
+                "</div>";
     }
 
     private static String getPacketTypeImage(int type) {
