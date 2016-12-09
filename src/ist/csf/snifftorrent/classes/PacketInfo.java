@@ -13,6 +13,10 @@ public class PacketInfo implements Serializable {
     public static final int BITTORRENT_HANDSHAKE = 0;
     public static final int BITTORRENT_PROTOCOL = 1;
     public static final int UTORRENT_PACKAGE = 2;
+    public static final int VUZE_PACKAGE = 3;
+    public static final int DELUGE_PACKAGE = 4;
+
+    public static final int UDP_PACKAGE = 5;
 
     /* ---| CLASS VARIABLES |--- */
     private int infraction_type;
@@ -107,6 +111,12 @@ public class PacketInfo implements Serializable {
                 return "BITTORRENT PROTOCOL";
             case UTORRENT_PACKAGE:
                 return "UTORRENT PACKAGE";
+            case VUZE_PACKAGE:
+                return "VUZE PACKAGE";
+            case DELUGE_PACKAGE:
+                return "DELUGE PACKAGE";
+            case UDP_PACKAGE:
+                return "UDP PACKAGE";
         }
 
         return "UNKNOW";

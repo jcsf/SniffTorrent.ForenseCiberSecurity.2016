@@ -12,35 +12,57 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Connection implements Serializable {
-    public static int SOURCE = 0, DESTINATION = 1;
+    public static final int SOURCE = 0, DESTINATION = 1;
+    public static final int BITTORRENT_TRAFFIC = 0, UDP_TRAFFIC = 1;
 
     private int hash;
+    private int type;
     private String infractorIP, infractorMAC;
     private String outsideIP, outsideMAC;
     ArrayList<PacketInfo> timeline;
 
-    public Connection (String infractorIP, String outsideIP, String infractorMAC, String outsideMAC) {
+    private int UDPPacketCounter;
+
+    public Connection (int type, String infractorIP, String outsideIP, String infractorMAC, String outsideMAC) {
+        this.type = type;
         this.infractorIP = infractorIP;
         this.infractorMAC = infractorMAC;
-        this.outsideIP = outsideIP;
-        this.outsideMAC = outsideMAC;
+        if (type == UDP_TRAFFIC) {
+            this.outsideIP = "Multiple Sources";
+            this.outsideMAC = "Multiple Sources";
+        } else {
+            this.outsideIP = outsideIP;
+            this.outsideMAC = outsideMAC;
+        }
         this.timeline = new ArrayList<>();
-        String mix = infractorIP + "|" + outsideIP+"|" + new Date();
+        String mix = infractorIP + "|" + outsideIP + "|" + new Date();
         this.hash = mix.hashCode();
+
+        this.UDPPacketCounter = 0;
     }
 
     public int getHash() { return this.hash; }
+    public int getType() { return this.type; }
     public String getInfractorIP() { return this.infractorIP; }
     public String getInfractorMAC() { return this.infractorMAC; }
     public String getOutsideIP() { return this.outsideIP; }
     public String getOutsideMAC() { return this.outsideMAC; }
     public ArrayList<PacketInfo>getTimeline() { return this.timeline; }
 
+    public void increaseUDPPacketCounter(PacketInfo p) {
+        this.timeline.remove(1);
+        this.timeline.add(p);
+        this.UDPPacketCounter++;
+    }
+
+    public void setUDPPacketCounter() { this.UDPPacketCounter = this.timeline.size(); }
+    public int getUDPPacketCounter() { return this.UDPPacketCounter; }
+
     public void addPacketToTimeline(PacketInfo packet) {
         this.timeline.add(packet);
     }
 
-    public static Connection createConnection (PacketInfo packetInfo) {
+    public static Connection createConnection (int type, PacketInfo packetInfo) {
         Connection newCon;
         PcapPacket packet = packetInfo.getPacket();
 
@@ -50,9 +72,9 @@ public class Connection implements Serializable {
         int pingDestination = Ping.pingTime(source_destinationIP[DESTINATION]);
 
         if (pingDestination < pingSource) {
-            newCon = new Connection(source_destinationIP[DESTINATION], source_destinationIP[SOURCE], source_destinationMAC[DESTINATION], source_destinationMAC[SOURCE]);
+            newCon = new Connection(type, source_destinationIP[DESTINATION], source_destinationIP[SOURCE], source_destinationMAC[DESTINATION], source_destinationMAC[SOURCE]);
         } else {
-            newCon = new Connection(source_destinationIP[SOURCE], source_destinationIP[DESTINATION], source_destinationMAC[SOURCE], source_destinationMAC[DESTINATION]);
+            newCon = new Connection(type, source_destinationIP[SOURCE], source_destinationIP[DESTINATION], source_destinationMAC[SOURCE], source_destinationMAC[DESTINATION]);
         }
 
         return newCon;
@@ -78,6 +100,17 @@ public class Connection implements Serializable {
         macs[1] = FormatUtils.mac(ethernetInfo.destination());
 
         return macs;
+    }
+
+    public String getTypeDescription() {
+        switch (this.type) {
+            case BITTORRENT_TRAFFIC:
+                return "BITTORRENT TRAFFIC";
+            case UDP_TRAFFIC:
+                return "SUSPICIOUS UDP TRAFFIC";
+        }
+
+        return "UNKNOW";
     }
 
 }

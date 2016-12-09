@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Date;
 
 import ist.csf.snifftorrent.classes.*;
 
@@ -14,9 +15,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
 
     ArrayList<Connection> liveConnections;
     ArrayList<Connection> savedConnections;
+    ArrayList<Connection> udpTraffic;
 
     protected Server() throws RemoteException {
         this.liveConnections = new ArrayList<>();
+        this.udpTraffic = new ArrayList<>();
 
         try {
             this.savedConnections = (ArrayList<Connection>) readFileToList("savedConnections");
@@ -37,6 +40,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
         System.setProperty("java.rmi.server.hostname","localhost");
         ServerInterface server = new Server();
         LocateRegistry.createRegistry(1099).rebind("server", server);
+        new UDPTrafficCleaner(600000, server);
         System.out.println("Server Ready...");
     }
 
@@ -121,7 +125,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
             }
         }
 
-        return Connection.createConnection(info);
+        return Connection.createConnection(Connection.BITTORRENT_TRAFFIC, info);
     }
 
     // SAVED PACKETS METHODS
@@ -232,6 +236,87 @@ public class Server extends UnicastRemoteObject implements ServerInterface{
 
         if (list == SAVED) {
             this.writeListToFile("savedConnections");
+        }
+    }
+
+    //UDP BEHAVIOUR TRAFFIC
+    @Override
+    public void insertUDPPacket(PacketInfo info) throws RemoteException, IOException {
+        Connection connection = searchConnectionWithUDPPacket(info);
+
+        if (connection.getUDPPacketCounter() <= 1000) {
+            connection.addPacketToTimeline(info);
+        } else {
+            connection.increaseUDPPacketCounter(info);
+        }
+
+        if(!this.udpTraffic.contains(connection)) {
+            this.udpTraffic.add(connection);
+        }
+
+        if(connection.getTimeline().size() > 1000 && !this.liveConnections.contains(connection)) { // MORE THAN 1000 UDP PACKAGES
+            PacketInfo first = connection.getTimeline().get(0);
+            PacketInfo last = connection.getTimeline().get(connection.getTimeline().size()-1);
+            connection.setUDPPacketCounter();
+            connection.getTimeline().clear();
+            connection.getTimeline().add(first);
+            connection.getTimeline().add(last);
+
+            this.liveConnections.add(connection);
+        }
+    }
+
+    private Connection searchConnectionWithUDPPacket(PacketInfo info) {
+
+        for (int i = 0; i < this.udpTraffic.size(); i++) {
+            if (info.getSourceIP().equals(this.udpTraffic.get(i).getInfractorIP())) {
+                return this.udpTraffic.get(i);
+            } else if (info.getDestinationIP().equals(this.udpTraffic.get(i).getInfractorIP())) {
+                return this.udpTraffic.get(i);
+            }
+        }
+
+        return Connection.createConnection(Connection.UDP_TRAFFIC, info);
+    }
+
+    @Override
+    public void checkOldUDPTraffic() throws RemoteException{
+        ArrayList <Connection> toRemove = new ArrayList<>();
+        Date now = new Date();
+        long tenMinutes = 10 * 60000;
+
+        for (int i = 0; i < this.udpTraffic.size(); i++) {
+            Date timestampAfter10Min = new Date (this.udpTraffic.get(i).getTimeline().get(0).getTimeStamp().getTime() + tenMinutes);
+            if(now.after(timestampAfter10Min)) {
+                toRemove.add(this.udpTraffic.get(i));
+            }
+        }
+
+        for (int i = 0; i < toRemove.size(); i++) {
+            this.udpTraffic.remove(toRemove.get(i));
+        }
+    }
+}
+
+//Thread to clean old udp traffic detected
+class UDPTrafficCleaner extends Thread {
+
+    int timeSleepMS;
+    ServerInterface db;
+
+    public UDPTrafficCleaner (int timeSleepMS, ServerInterface db) {
+        this.timeSleepMS = timeSleepMS;
+        this.db = db;
+        this.start();
+    }
+
+    //=============================
+    public void run(){
+        while(true) {
+            try {
+                Thread.sleep(timeSleepMS);
+                db.checkOldUDPTraffic();
+            } catch (Exception e) {}
         }
     }
 }

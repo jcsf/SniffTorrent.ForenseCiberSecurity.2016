@@ -15,6 +15,12 @@ public class BitTorrentFilter {
     /* UTORRENT PACKETS VARIABLES */
     private static final String utorrentPacketsSignature = "75546f7272656e74";
 
+    /* VUZETORRENT PACKET VARIABLES */
+    private static final String vuzePacketsSignature = "6c6962746f7272656e745f6c6561702f";
+
+    /*DELUGE PACKET VARIABLES*/
+    private static final String delugePacketsSignature = "44656c756765";
+
     public static boolean filterHandshake (PcapPacket packet) {
         String rawHexData = PacketInfo.getHexRawFromPackage(packet);
         if (rawHexData.contains(bittorrentHandshakeSignature)) {
@@ -36,6 +42,24 @@ public class BitTorrentFilter {
     public static boolean filterUTorrentPackage (PcapPacket packet) {
         String rawHexData = PacketInfo.getHexRawFromPackage(packet);
         if (rawHexData.contains(utorrentPacketsSignature)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean filterVuzeTorrentPackage (PcapPacket packet) {
+        String rawHexData = PacketInfo.getHexRawFromPackage(packet);
+        if (rawHexData.contains(vuzePacketsSignature)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean filterDelugeTorrentPackage (PcapPacket packet) {
+        String rawHexData = PacketInfo.getHexRawFromPackage(packet);
+        if (rawHexData.contains(delugePacketsSignature)) {
             return true;
         }
 

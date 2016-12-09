@@ -32,4 +32,8 @@ public interface ServerInterface extends Remote {
     ArrayList<PacketInfo> getPacketsFilteringType(int list, int hashConnection, String type) throws RemoteException;
     ArrayList<PacketInfo> getPacketsFilteringTCPUDP(int list, int hashConnection, String type) throws RemoteException;
     void deletePacketInfo(int list, int hashConnection, int hashPacket) throws RemoteException, IOException;
+
+    //UDP BEHAVIOUR TRAFFIC
+    void insertUDPPacket(PacketInfo info) throws RemoteException, IOException;
+    void checkOldUDPTraffic() throws RemoteException;
 }

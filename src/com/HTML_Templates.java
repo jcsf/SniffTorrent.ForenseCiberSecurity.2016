@@ -104,10 +104,10 @@ public class HTML_Templates {
             listHTML += "<a href=\"/SniffTorrent/ShowConnection?list=" + list + "&connection=" + con.getHash() + "\" class=\"list-group-item\">\n" +
                         "<div class=\"row\">\n" +
                             "<div class=\"pull-left\">\n" +
-                                "<img src=\"" + requestPath + "/images/connection.png\" height=50px style=\"margin-top: 6px; margin-left: 12px;\">\n" +
+                                "<img src=\"" + requestPath + "/images/" + getConnectionTypeImage(con.getType()) + ".png\" height=50px style=\"margin-top: 6px; margin-left: 12px;\">\n" +
                             "</div>\n" +
                             "<div class=\"col-md-10\">\n" +
-                                "<h4 class=\"list-group-item-heading\"> Bittorrent Connection </h4>\n" +
+                                "<h4 class=\"list-group-item-heading\">" + con.getTypeDescription() + "</h4>\n" +
                                 "<p class=\"list-group-item-text\"><b>Infractor IP: </b>" + con.getInfractorIP() + "</p>\n" +
                                 "<p class=\"list-group-item-text\"><b>Outside IP: </b>" + con.getOutsideIP() + "</p>\n" +
                             "</div>\n" +
@@ -143,10 +143,10 @@ public class HTML_Templates {
                     "<div class=\"jumbotron\">\n" +
                         "<div class=\"row\">\n" +
                             "<div class=\"col-md-1\">\n" +
-                                "<img src=\"" + requestPath + "/images/connection.png\" height=70px style=\"margin-top: 15px;\">\n" +
+                                "<img src=\"" + requestPath + "/images/"+ getConnectionTypeImage(connection.getType()) + ".png\" height=70px style=\"margin-top: 15px;\">\n" +
                             "</div>\n" +
                             "<div class=\"col-md-11\">\n" +
-                                "<h1 class=\"display-3\">BITTORRENT CONNECTION</h1>\n" +
+                                "<h1 class=\"display-3\">" + connection.getTypeDescription() + "</h1>\n" +
                             "</div>\n" +
                         "</div>\n" +
                         "<br>\n" +
@@ -177,7 +177,7 @@ public class HTML_Templates {
             } else {
                 listHTML += "<li class=\"timeline-inverted\">\n";
             }
-            listHTML +=   "<div class=\"timeline-badge\"><img src=\"" + requestPath + "/images/"+ getTypeImage(info.getInfractionType()) + ".png\" height=\"50px\"></div>\n" +
+            listHTML +=   "<div class=\"timeline-badge\"><img src=\"" + requestPath + "/images/"+ getPacketTypeImage(info.getInfractionType()) + ".png\" height=\"50px\"></div>\n" +
                             "<div class=\"timeline-panel\">\n" +
                                 "<div class=\"timeline-heading\">\n" +
                                     "<h4 class=\"timeline-title\"><b>" + info.getInfractionTypeDescription() + "</b></h4>\n" +
@@ -272,7 +272,7 @@ public class HTML_Templates {
         }
     }
 
-    private static String getTypeImage(int type) {
+    private static String getPacketTypeImage(int type) {
         switch(type) {
             case PacketInfo.BITTORRENT_HANDSHAKE:
                 return "handshake";
@@ -280,6 +280,23 @@ public class HTML_Templates {
                 return "bittorrent";
             case PacketInfo.UTORRENT_PACKAGE:
                 return "utorrent";
+            case PacketInfo.VUZE_PACKAGE:
+                return "vuze";
+            case PacketInfo.DELUGE_PACKAGE:
+                return "deluge";
+            case PacketInfo.UDP_PACKAGE:
+                return "udp";
+        }
+
+        return "";
+    }
+
+    private static String getConnectionTypeImage(int type) {
+        switch(type) {
+            case Connection.BITTORRENT_TRAFFIC:
+                return "bittorrent_connection";
+            case Connection.UDP_TRAFFIC:
+                return "udp_traffic";
         }
 
         return "";

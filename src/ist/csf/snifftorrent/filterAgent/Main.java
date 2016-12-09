@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 
 import ist.csf.snifftorrent.RMIServer.ServerInterface;
 import ist.csf.snifftorrent.classes.*;
+import org.jnetpcap.protocol.tcpip.Udp;
 
 public class Main {
     public static ServerInterface server = null;
@@ -78,6 +79,10 @@ public class Main {
                     pInfo = new BitTorrentHandshake(packet);
                 } else if (BitTorrentFilter.filterUTorrentPackage(packet)) { // DETECT UTORRENT PACKAGES
                     pInfo = new PacketInfo(PacketInfo.UTORRENT_PACKAGE, packet);
+                } else if (BitTorrentFilter.filterVuzeTorrentPackage(packet)) { // DETECT VUZE TORRENT PACKAGE
+                    pInfo = new PacketInfo(PacketInfo.VUZE_PACKAGE, packet);
+                } else if (BitTorrentFilter.filterDelugeTorrentPackage(packet)) { // DETECT DELUGE TORRENT PACKAGE
+                    pInfo = new PacketInfo(PacketInfo.DELUGE_PACKAGE, packet);
                 } else if (BitTorrentFilter.filterBittorentProtocol(packet)) { // DETECT BITTORRENT PROTOCOL
                     pInfo = new PacketInfo(PacketInfo.BITTORRENT_PROTOCOL, packet);
                 }
@@ -88,6 +93,16 @@ public class Main {
                         Main.server.insertPacketInfo(pInfo);
                     } catch (Exception e) {
                         e.printStackTrace();
+                    }
+                } else if (packet.hasHeader(new Udp())) {
+                    pInfo = new PacketInfo(PacketInfo.UDP_PACKAGE, packet);
+                    if(pInfo.getSourcePort() != 53 && pInfo.getDestinationPort() != 53) {
+                        System.out.println(pInfo.toString());
+                        try {
+                            Main.server.insertUDPPacket(pInfo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

@@ -2,8 +2,7 @@ package com;
 
 import ist.csf.snifftorrent.RMIServer.Server;
 import ist.csf.snifftorrent.RMIServer.ServerInterface;
-import ist.csf.snifftorrent.classes.Connection;
-import ist.csf.snifftorrent.classes.PacketInfo;
+import ist.csf.snifftorrent.classes.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,7 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Servlet implementation class FirstServlet
@@ -57,11 +57,28 @@ public class ShowConnection extends HttpServlet {
 
         String content = HTML_Templates.htmlNavBar(contextPath, onList, conInfo);
 
-        String timeline = HTML_Templates.htmlConnectionTimeLineToHtmlTimeLine(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), conInfo, conInfo.getTimeline());
+        String timeline;
+
+        if(conInfo.getType() == Connection.BITTORRENT_TRAFFIC) {
+            timeline = HTML_Templates.htmlConnectionTimeLineToHtmlTimeLine(contextPath, onList, con, request.getRequestURI()+ "?" + request.getQueryString(), conInfo, conInfo.getTimeline());
+        } else {
+            Date first = conInfo.getTimeline().get(0).getTimeStamp();
+            Date last = conInfo.getTimeline().get(1).getTimeStamp();
+            long diff = TimeUnit.MILLISECONDS.toSeconds(last.getTime() - first.getTime());
+
+            if (diff > 60) {
+                diff = TimeUnit.MILLISECONDS.toMinutes(last.getTime() - first.getTime());
+            }
+
+            timeline = "<p class=\"lead\"><b>Number of UDP Packets Exchanged: </b>" + conInfo.getUDPPacketCounter() + "</p>" +
+                        "<p class=\"lead\"><b>Time Between the First and the Last One: </b>" + diff + " Minutes</p>" ;
+        }
 
         content += HTML_Templates.htmlConnection(contextPath, onList, conInfo, timeline, "");
 
-        content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + conInfo.getTimeline().size());
+        if(conInfo.getType() == Connection.BITTORRENT_TRAFFIC) {
+            content += HTML_Templates.htmlFooter("<b>Total of Packets Found: </b>" + conInfo.getTimeline().size());
+        }
 
         out.println(HTML_Templates.htmlFile(HTML_Templates.htmlHeader(contextPath, "Sniff Torrent"), content));
     }
