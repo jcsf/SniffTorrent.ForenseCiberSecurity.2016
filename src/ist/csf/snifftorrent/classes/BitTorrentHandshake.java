@@ -56,7 +56,7 @@ public class BitTorrentHandshake extends PacketInfo {
                 "<p class=\"timeline-collapse\"><b>Protocol Name Length: </b>" + getPstrLen() + "</p>\n" +
                 "<p class=\"timeline-collapse\"><b>Protocol Name: </b>" + getPstr()  + "</p>\n" +
                 "<p class=\"timeline-collapse\"><b>Reserved Bytes: </b>" + getReservedBytes() + "</p>\n" +
-                "<p class=\"timeline-collapse\"><b>Info Hash: </b>" + getInfoHash() + "</p>\n" +
+                "<p class=\"timeline-collapse\"><b>Info Hash: </b><a target=\"_blank\" title=\"Search on Torrentz2\" href=\"https://torrentz2.eu/"+getInfoHash()+"\">" + getInfoHash() + "</a></p>\n" +
                 "<p class=\"timeline-collapse\"><b>Peer ID: </b>" + getPeerId() + "</p>\n" +
                 "<p class=\"timeline-collapse\"><b>Client Software ID: </b>" + getClientSoftwareID() + "</p>\n";
     }
