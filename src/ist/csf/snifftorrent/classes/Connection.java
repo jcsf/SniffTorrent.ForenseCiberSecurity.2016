@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 public class Connection implements Serializable {
     public static final int SOURCE = 0, DESTINATION = 1;
@@ -35,7 +36,10 @@ public class Connection implements Serializable {
             this.outsideMAC = outsideMAC;
         }
         this.timeline = new ArrayList<>();
-        String mix = infractorIP + "|" + outsideIP + "|" + new Date();
+
+        Random rand = new Random();
+        Date d = new Date();
+        String mix = infractorIP + outsideIP + d.getTime() + rand.nextLong();
         this.hash = mix.hashCode();
 
         this.UDPPacketCounter = 0;

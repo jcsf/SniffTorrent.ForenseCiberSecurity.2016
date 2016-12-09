@@ -52,7 +52,8 @@ public class ShowConnection extends HttpServlet {
             conInfo = server.getConnection(onList, con);
         } catch (Exception e) {
             e.printStackTrace();
-            conInfo = null;
+            out.println("<b>ERRO 404</b>");
+            return;
         }
 
         String content = HTML_Templates.htmlNavBar(contextPath, onList, conInfo);
@@ -65,13 +66,14 @@ public class ShowConnection extends HttpServlet {
             Date first = conInfo.getTimeline().get(0).getTimeStamp();
             Date last = conInfo.getTimeline().get(1).getTimeStamp();
             long diff = TimeUnit.MILLISECONDS.toSeconds(last.getTime() - first.getTime());
-
+            String timeUnit = "Seconds";
             if (diff > 60) {
                 diff = TimeUnit.MILLISECONDS.toMinutes(last.getTime() - first.getTime());
+                timeUnit = "Minutes";
             }
 
             timeline = "<p class=\"lead\"><b>Number of UDP Packets Exchanged: </b>" + conInfo.getUDPPacketCounter() + "</p>" +
-                        "<p class=\"lead\"><b>Time Between the First and the Last One: </b>" + diff + " Minutes</p>" ;
+                        "<p class=\"lead\"><b>Time Between the First and the Last One: </b>" + diff + " " + timeUnit + "</p>" ;
         }
 
         content += HTML_Templates.htmlConnection(contextPath, onList, conInfo, timeline, "");

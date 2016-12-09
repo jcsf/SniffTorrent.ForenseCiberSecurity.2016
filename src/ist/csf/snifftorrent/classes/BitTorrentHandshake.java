@@ -28,6 +28,11 @@ public class BitTorrentHandshake extends PacketInfo {
         this.reservedBytes = content.substring(endPstr, endPstr + 8 * 2);
         this.infoHash = content.substring(endPstr + 8 * 2, endPstr + 8 * 2 + 20 * 2);
         this.peerId = content.substring(endPstr + 8 * 2 + 20 * 2);
+
+        //TEST IF IT IS ALL RIGHT
+        String clientID = BitTorrentHandshake.convertStringHEXToASCII(this.peerId);
+
+        clientID.substring(0, 8);
     }
 
     public int getPstrLen() { return pstrLen; }

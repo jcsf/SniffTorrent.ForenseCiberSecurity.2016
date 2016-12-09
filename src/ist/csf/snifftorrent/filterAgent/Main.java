@@ -76,7 +76,16 @@ public class Main {
                 PacketInfo pInfo = null;
 
                 if (BitTorrentFilter.filterHandshake(packet)) { // DETECT A TORRENT HANDSHAKE
-                    pInfo = new BitTorrentHandshake(packet);
+                    try {
+                        BitTorrentHandshake bsInfo = new BitTorrentHandshake(packet);
+                        if (bsInfo.getPstr().equals("BitTorrent protocol")) {
+                            pInfo = bsInfo;
+                        } else {
+                            pInfo = new PacketInfo(PacketInfo.BITTORRENT_PROTOCOL, packet);
+                        }
+                    } catch (Exception e) {
+                        pInfo = new PacketInfo(PacketInfo.BITTORRENT_PROTOCOL, packet);
+                    }
                 } else if (BitTorrentFilter.filterUTorrentPackage(packet)) { // DETECT UTORRENT PACKAGES
                     pInfo = new PacketInfo(PacketInfo.UTORRENT_PACKAGE, packet);
                 } else if (BitTorrentFilter.filterVuzeTorrentPackage(packet)) { // DETECT VUZE TORRENT PACKAGE
